@@ -14,15 +14,28 @@ const c = require("./routes/words.js");
 const app = express();
 const port = process.env.PORT || 6001;
 
+var bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
 app.use(cors());
-app.use(express.json());
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
 
 //app.use("/hangman", home);
 // app.use("/hangman/words", words);
 // app.use("/hangman/play", play);
 // app.use("/hangman/signup", signup);
-app.get("/trial", (req, res) => res.send("hello world"));
+app.get("/dictionary", (req, res) => res.send(c.list));
 app.get("/words", (req, res) => res.send(c.chooseRandom()));
+app.post("/add", (req, res) => {
+  console.log("HERE");
+  console.log(Object.keys(req.body));
+  c.list.push(Object.keys(req.body)[0]);
+  console.log(c.list);
+  res.send("Recieved");
+  // res.redirect("/dictionary");
+});
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static("./src/build"));

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = require("express").Router();
 const cors = require("cors");
+const dbo = require("./db");
 
 const home = require("./routes/home");
 const signup = require("./routes/signup");
@@ -15,10 +16,15 @@ const app = express();
 const port = process.env.PORT || 6001;
 
 var bodyParser = require("body-parser");
+const { client } = require("./db");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use(cors());
+
+// dbo.connect();
+// dbo.listAll();
+
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
 
@@ -26,15 +32,22 @@ app.use(cors());
 // app.use("/hangman/words", words);
 // app.use("/hangman/play", play);
 // app.use("/hangman/signup", signup);
-app.get("/dictionary", (req, res) => res.send(c.list));
-app.get("/words", (req, res) => res.send(c.chooseRandom()));
-app.post("/add", (req, res) => {
-  console.log("HERE");
-  console.log(Object.keys(req.body));
-  c.list.push(Object.keys(req.body)[0]);
-  console.log(c.list);
+app.get("/score", async (req, res) => {
+  await dbo.connect();
+  res.send(await dbo.findScore());
+});
+app.post("/score", async (req, res) => {
+  // console.log(Object.keys(req.body)[0]);
+  dbo.updateScore(Object.keys(req.body)[0]);
   res.send("Recieved");
-  // res.redirect("/dictionary");
+});
+app.get("/dictionary", async (req, res) => {
+  res.send(/*c.list*/ await c.getOnlyWords());
+});
+app.get("/words", async (req, res) => res.send(await c.chooseRandom()));
+app.post("/add", (req, res) => {
+  dbo.updateList(Object.keys(req.body)[0]);
+  res.send("Recieved");
 });
 
 if (process.env.NODE_ENV === "production") {
